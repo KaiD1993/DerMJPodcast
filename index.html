@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MJ Podcast – Intro</title>
+
+<style>
+/* ===== PAGE FADE IN ===== */
+
+.pageFade{
+  position:fixed;
+  inset:0;
+  background:white;
+  opacity:1;
+  pointer-events:none;
+  z-index:9999;
+  transition:opacity 1.5s ease;
+}
+
+.pageFade.hide{
+  opacity:0;
+}
+*{box-sizing:border-box;}
+html,body{
+  height:100%;
+  margin:0;
+  font-family:system-ui;
+}
+
+/* ===== BACKGROUND WRAPPER ===== */
+.bg{
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;   /* WICHTIG */
+  background:
+    radial-gradient(1000px 700px at 20% 20%, rgba(255,255,255,.9), transparent 60%),
+    radial-gradient(900px 600px at 80% 30%, rgba(255,220,235,.4), transparent 60%),
+    linear-gradient(135deg,#fafafd,#ececf2);
+}
+
+/* Sparkles */
+#sparkles{
+  position:absolute;
+  inset:0;
+  z-index:-1;           /* WICHTIG */
+}
+
+/* ===== CONTENT WRAPPER ===== */
+.content{
+  position:relative;
+  z-index:5;            /* WICHTIG */
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* Logo */
+#logoOuter{
+  cursor:pointer;
+  transition:transform .3s ease;
+}
+
+#logoOuter:hover{
+  transform:scale(1.15);
+}
+
+#logoFloat{
+  animation:float 4s ease-in-out infinite;
+}
+
+@keyframes float{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-18px);}
+}
+
+#logo{
+  width:min(420px,80vw);
+  pointer-events:none;
+  filter:
+    drop-shadow(0 0 30px rgba(255,255,255,.9))
+    drop-shadow(0 0 80px rgba(255,200,230,.6));
+}
+
+/* Fade */
+.fade{
+  position:fixed;
+  inset:0;
+  background:white;
+  opacity:0;
+  transition:opacity 2s ease;
+  z-index:50;
+  pointer-events:none;
+}
+
+.fade.show{
+  opacity:1;
+}
+
+#logoOuter.active{
+  animation:rise 6s ease-in-out forwards;
+}
+
+@keyframes rise{
+  0%{
+    transform:scale(1);
+  }
+  30%{
+    transform:scale(1.25) translateY(-20px);
+  }
+  70%{
+    transform:scale(1.35) translateY(-40px);
+  }
+  100%{
+    transform:scale(1.4) translateY(-60px);
+  }
+}
+
+/* stärkerer Glow während Animation */
+#logoOuter.active #logo{
+  filter:
+    drop-shadow(0 0 60px rgba(255,255,255,1))
+    drop-shadow(0 0 140px rgba(255,180,220,1));
+  transition:filter 1.5s ease;
+}
+/* ===== SKIP BUTTON ===== */
+
+.skip-btn{
+  position:fixed;
+  bottom:40px;
+  left:50%;
+  transform:translateX(-50%);
+
+  z-index:100;
+
+  font-size:13px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+
+  color:#666;
+  opacity:0;
+  transition:opacity 1.2s ease, transform .3s ease;
+
+  cursor:pointer;
+}
+
+.skip-btn.show{
+  opacity:.6;
+}
+
+.skip-btn:hover{
+  opacity:1;
+  transform:translateX(-50%) translateY(-3px);
+}
+</style>
+</head>
+
+<body>
+<div class="pageFade"></div>
+
+<div class="bg">
+  <canvas id="sparkles"></canvas>
+</div>
+
+<div class="content">
+  <div id="logoOuter">
+    <div id="logoFloat">
+      <img src="media/branding.png" id="logo" alt="MJ Podcast">
+    </div>
+  </div>
+</div>
+
+<div class="fade" id="fade"></div>
+
+<div class="skip-btn" id="skipIntro">Überspringen</div>
+
+<audio id="introSound">
+  <source src="media/introclick.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+/* ===== SPARKLES ===== */
+const canvas=document.getElementById("sparkles");
+const ctx=canvas.getContext("2d");
+let w,h,dpr;
+
+function resize(){
+  dpr=Math.min(2,window.devicePixelRatio||1);
+  w=canvas.width=innerWidth*dpr;
+  h=canvas.height=innerHeight*dpr;
+  canvas.style.width=innerWidth+"px";
+  canvas.style.height=innerHeight+"px";
+}
+resize();
+addEventListener("resize",resize);
+
+const stars=Array.from({length:150},()=>({
+  x:Math.random()*w,
+  y:Math.random()*h,
+  r:Math.random()*2*dpr,
+  a:Math.random()*0.5,
+  tw:Math.random()*2
+}));
+
+function draw(t){
+  ctx.clearRect(0,0,w,h);
+  for(const s of stars){
+    const alpha=s.a*(0.4+0.6*Math.sin(t*0.002*s.tw));
+    ctx.beginPath();
+    ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(255,255,255,${alpha})`;
+    ctx.fill();
+  }
+  requestAnimationFrame(draw);
+}
+requestAnimationFrame(draw);
+
+/* ===== CLICK ===== */
+const logoOuter=document.getElementById("logoOuter");
+const sound=document.getElementById("introSound");
+const fade=document.getElementById("fade");
+
+logoOuter.addEventListener("click",()=>{
+
+  sound.currentTime=0;
+  sound.play().catch(()=>{});
+
+  logoOuter.style.pointerEvents="none";
+  logoOuter.classList.add("active");
+
+  stars.forEach(s=>{
+    s.a = 1;
+    s.r *= 2;
+  });
+
+  setTimeout(()=>{
+    fade.classList.add("show");
+  },5000);
+
+  setTimeout(()=>{
+    window.location.href="home.html";
+  },7000);
+
+});
+</script>
+
+<script>
+window.addEventListener("load",()=>{
+  const pageFade=document.querySelector(".pageFade");
+  setTimeout(()=>{
+    pageFade.classList.add("hide");
+  },100);
+});
+/* ===== SKIP INTRO ===== */
+
+const skipBtn = document.getElementById("skipIntro");
+
+// Button nach 2 Sekunden einblenden
+setTimeout(()=>{
+  skipBtn.classList.add("show");
+},2000);
+
+skipBtn.addEventListener("click",()=>{
+  fade.classList.add("show");
+
+  setTimeout(()=>{
+    window.location.href="home.html";
+  },800);
+});
+</script>
