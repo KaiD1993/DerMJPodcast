@@ -1,0 +1,26 @@
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+.stage{
+  position: fixed;
+  inset: 0;
+  transform-origin: top center;
+  will-change: transform;
+}
+
+.pageFade{
+  position: fixed;
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 99999;
+  transition: opacity .55s ease;
+}
+
+.pageFade.show{
+  opacity: 1;
+  pointer-events: all;
+}
