@@ -1,13 +1,13 @@
-html, body {
-  height: 100%;
-  overflow: hidden;
+html, body{
+  height: auto;
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
+body{ min-height: 100dvh; }
 
 .stage{
-  position: fixed;
-  inset: 0;
-  transform-origin: top center;
-  will-change: transform;
+  position: relative;
 }
 
 .pageFade{
@@ -23,4 +23,80 @@ html, body {
 .pageFade.show{
   opacity: 1;
   pointer-events: all;
+}
+:root{
+  --side-space: clamp(0px, 10vw, 220px);
+  --bottom-space: clamp(180px, 22vh, 340px);
+}
+
+.wrap{
+  min-height: 100dvh;
+  padding-bottom: var(--bottom-space);
+
+  position: relative;
+  z-index: 10;
+}
+.silhouette{
+  width: clamp(220px, 32vw, 380px);
+  z-index: 2;
+}
+
+.mj-tv{
+  width: clamp(240px, 32vw, 460px);
+  z-index: 2;
+}
+
+main{
+  padding-left: calc(16px + var(--side-space));
+  padding-right: calc(16px + var(--side-space));
+  padding-bottom: 24px;
+}
+.silhouette{
+  width: clamp(220px, 32vw, 380px);
+}
+
+.mj-tv{
+  width: clamp(240px, 32vw, 460px);
+}
+
+.card{ width: min(640px, 100%); }
+
+@media (max-width: 900px){
+  .silhouette{ right: -40px; }
+  .mj-tv{ left: -70px; }
+}
+
+@media (max-width: 600px){
+  :root{ --side-space: 0px; }
+
+  .silhouette{
+    right: -120px;
+    opacity: .5;
+  }
+
+  .mj-tv{
+    left: -150px;
+    opacity: .5;
+  }
+/* === EMERGENCY RESET für ueber-uns === */
+#stage{
+  position: relative !important;
+  inset: auto !important;
+  transform: none !important;
+  will-change: auto !important;
+}
+
+/* Hintergrund darf fixed bleiben */
+#sparkles{ position: fixed; inset: 0; z-index: -2; }
+.glow{ position: fixed; inset: -35%; z-index: -3; }
+
+/* Inhalte IMMER über den Deko-Elementen */
+.wrap{
+  position: relative;
+  z-index: 20;
+}
+
+/* Silhouette/TV hinter Content (oder wenn du willst: 5 statt 15) */
+.silhouette, .mj-tv{
+  z-index: 10;
 }

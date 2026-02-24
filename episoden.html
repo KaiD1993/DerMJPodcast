@@ -4,7 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>EPISODEN</title>
-<link rel="stylesheet" href="site.css">
 
   <style>
     :root{
@@ -14,35 +13,9 @@
     }
 
     *{ box-sizing:border-box; }
-    html, body{ height:100%; overflow:hidden; }
+    html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
 
-html{
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
-}
-
-.stage{
-  position: fixed;
-  inset: 0;
-  transform-origin: top center;
-  will-change: transform;
-}
-
-.pageFade{
-  position: fixed;
-  inset: 0;
-  background: #ffffff;
-  opacity: 0;
-  pointer-events: none;
-  z-index: 99999;
-  transition: opacity .55s ease;
-}
-.pageFade.show{
-  opacity: 1;
-  pointer-events: all;
-}
-
-body{
+    body{
       margin:0;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
       color:#fff;
@@ -55,18 +28,17 @@ body{
         linear-gradient(135deg, var(--bgA), var(--bgB) 45%, var(--bgC));
     }
 
-    #sparkles{
+    /* ===== BACKGROUND STAGE (DARF NIE EVENTS FANGEN) ===== */
+    .stage{
       position: fixed;
       inset: 0;
-      z-index: -2;
-      pointer-events: none;
+      z-index: -10;
+      pointer-events: none; /* <- wichtigster Fix */
     }
 
     .glow{
-      position: fixed;
+      position: absolute;
       inset: -35%;
-      z-index: -3;
-      pointer-events: none;
       filter: blur(45px);
       background:
         radial-gradient(circle at 30% 25%, rgba(255,255,255,.18), transparent 45%),
@@ -79,12 +51,24 @@ body{
       to  { transform: translate3d( 1.2%,  1%, 0) scale(1.02); }
     }
 
+    #sparkles{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      pointer-events:none;
+    }
+
+    /* ===== LAYOUT ===== */
     .wrap{
-  min-height: 100vh;
-  display:flex;
-  flex-direction:column;
-  align-items:stretch; /* WICHTIG: nicht mehr center */
-}
+      min-height: 100vh;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      position: relative;
+      z-index: 10;
+      padding-bottom: clamp(180px, 22vh, 340px); /* Platz unten für Silhouette/TV */
+    }
 
     header{
       width: 100%;
@@ -124,10 +108,7 @@ body{
       transition: transform .15s ease, box-shadow .15s ease;
       user-select:none;
     }
-    .sticker span{
-      display:inline-block;
-      transform: skewX(calc(var(--sk) * -1));
-    }
+    .sticker span{ display:inline-block; transform: skewX(calc(var(--sk) * -1)); }
     .sticker:hover{
       transform: rotate(var(--r)) skewX(var(--sk)) translateY(-3px);
       box-shadow: 12px 12px 0 #000;
@@ -206,23 +187,16 @@ body{
     .logo-sparkle.sC{ left: 22%; bottom: 18%; animation-delay: .8s; }
     .logo-sparkle.sD{ right: 22%; bottom: 12%; animation-delay: 1.2s; }
 
-   main{
-  width: 100%;
-  padding-top: 40px;
-  padding-bottom: 40px;
-
-  display: flex;
-  justify-content: center;
-}
-
-@media (max-width: 820px){
-  main{
-    padding: 40px 16px 40px;
-  }
-}
+    main{
+      width: 100%;
+      max-width: 1100px;
+      padding: 40px 16px 40px;
+      display:grid;
+      place-items: start center;
+    }
 
     .card{
-      width: min(620px, 86vw);
+      width: min(720px, 92vw);
       padding: 20px 26px 26px;
       background: rgba(255,255,255,0.65);
       color: #111;
@@ -230,7 +204,6 @@ body{
       border-radius: 0;
       box-shadow: 12px 12px 0 rgba(0,0,0,0.6);
       transition: transform .15s ease, box-shadow .15s ease;
-      
     }
     .card:hover{
       transform: translateY(-4px);
@@ -249,12 +222,21 @@ body{
       line-height: 1.6;
     }
 
-    /* ===== Folgen Layout ===== */
-    .episodes{
-      display: grid;
-      gap: 16px;
-      margin-top: 10px;
+    /* ===== Episoden ===== */
+    .latest-badge{
+      display:inline-block;
+      background:#fff;
+      color:#111;
+      font-weight: 900;
+      letter-spacing: .08em;
+      font-size: 12px;
+      padding: 6px 10px;
+      box-shadow: 6px 6px 0 #000;
+      margin-bottom: 10px;
+      text-transform: uppercase;
     }
+
+    #latestEpisode{ margin-bottom: 40px; }
 
     .episode{
       background: rgba(255,255,255,0.55);
@@ -292,34 +274,68 @@ body{
       line-height: 1.55;
     }
 
-    .episode audio{
-      width: 100%;
-    }
+    .episode audio{ width:100%; }
 
-    .latest-badge{
-      display:inline-block;
-      background:#fff;
-      color:#111;
+    .all-episodes-text{
+      margin: 26px 0 10px;
       font-weight: 900;
-      letter-spacing: .08em;
-      font-size: 12px;
-      padding: 6px 10px;
-      box-shadow: 6px 6px 0 #000;
-      margin-bottom: 10px;
       text-transform: uppercase;
+      letter-spacing: .05em;
+      font-size: 13px;
+      color: #111;
     }
-#latestEpisode{
-  margin-bottom: 40px;  /* Abstand unter der neuesten Folge */
-}
 
-    /* Silhouette rechts */
+    .platform-links{
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .platform-btn{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+
+      background: #fff;
+      color: #111;
+      text-decoration: none;
+
+      padding: 10px 14px;
+      font-weight: 900;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      font-size: 12px;
+
+      box-shadow: 8px 8px 0 #000;
+      transition: transform .15s ease, box-shadow .15s ease;
+      user-select: none;
+    }
+
+    .platform-btn:hover{
+      transform: translateY(-2px);
+      box-shadow: 10px 10px 0 #000;
+    }
+
+    .platform-btn:active{
+      transform: translateY(1px);
+      box-shadow: 6px 6px 0 #000;
+    }
+
+    .platform-btn .ico{ width: 18px; height: 18px; display:inline-block; }
+    .platform-btn .ico svg{ width:18px; height:18px; display:block; fill: currentColor; }
+
+    .platform-links .platform-btn:nth-child(1){ color:#1DB954; }
+    .platform-links .platform-btn:nth-child(2){ color:#A855F7; }
+    .platform-links .platform-btn:nth-child(3){ color:#FF0000; }
+
+    /* ===== SILHOUETTE ===== */
     .silhouette{
       position: fixed;
       right: 18px;
       bottom: 0;
       width: min(380px, 32vw);
       max-width: 520px;
-      z-index: 6;
+      z-index: 20;
       cursor: pointer;
       filter: drop-shadow(0 22px 40px rgba(0,0,0,.35));
       user-select:none;
@@ -352,22 +368,18 @@ body{
       }
     }
 
-    /* ===== MJ TV LINKS (wie HOME) ===== */
-  .mj-tv{
-  position: fixed;
-  left: -45px;
-  bottom: 0;
-  width: min(460px, 32vw);
-  z-index: 6;
-  user-select: none;
-  filter: drop-shadow(0 22px 40px rgba(0,0,0,.35));
-}
-
-    .mj-tv .tv-wrap{
-      position: relative;
-      width: 100%;
+    /* ===== MJ TV ===== */
+    .mj-tv{
+      position: fixed;
+      left: -45px;
+      bottom: 0;
+      width: min(460px, 32vw);
+      z-index: 20;
+      user-select: none;
+      filter: drop-shadow(0 22px 40px rgba(0,0,0,.35));
     }
 
+    .mj-tv .tv-wrap{ position: relative; width: 100%; }
     .mj-tv .tv-overlay{
       position: relative;
       z-index: 2;
@@ -377,7 +389,6 @@ body{
       pointer-events: none;
       -webkit-user-drag:none;
     }
-
     .mj-tv .tv-video{
       position: absolute;
       left: 57.8%;
@@ -400,12 +411,10 @@ body{
       border-radius: 999px;
       transition: transform .08s ease, box-shadow .08s ease;
     }
-
     .mj-tv .tv-btn.pressed{
       transform: translateY(2px) scale(0.95);
       box-shadow: inset 0 2px 4px rgba(0,0,0,.6);
     }
-
     .mj-tv .tv-btn.b1{ left: 91.6248%; top: 37.6376%; width: 3.6293%; height: 2.9213%; }
     .mj-tv .tv-btn.b2{ left: 91.6248%; top: 41.2362%; width: 3.5176%; height: 3.0059%; }
     .mj-tv .tv-btn.b3{ left: 91.6248%; top: 44.9196%; width: 4.0201%; height: 3.0059%; }
@@ -415,7 +424,7 @@ body{
       .mj-tv{ width: min(320px, 55vw); left: 10px; }
     }
 
-    /* OUTFIT SPARKLES */
+    /* Outfit sparkles */
     .mj-sparkles{
       position: absolute;
       inset: 0;
@@ -449,18 +458,14 @@ body{
       top: 50%;
       width: 34px;
       height: 3px;
-      background: linear-gradient(90deg,
-        rgba(255,255,255,0),
-        rgba(255,255,255,.95),
-        rgba(255,255,255,0));
+      background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.95), rgba(255,255,255,0));
       transform: translate(-50%,-50%);
       opacity: 0;
       filter: drop-shadow(0 0 10px rgba(255,255,255,1));
       animation: flareOpacity 1.6s infinite ease-in-out;
     }
-    .mj-glint::after{
-      transform: translate(-50%,-50%) rotate(90deg);
-    }
+    .mj-glint::after{ transform: translate(-50%,-50%) rotate(90deg); }
+
     @keyframes mjSparkle{
       0%   { transform: scale(.35) rotate(0deg); opacity: 0; }
       25%  { transform: scale(1.25) rotate(10deg); opacity: 1; }
@@ -486,99 +491,23 @@ body{
     .mj-glint.g10 { left: 32%; top: 60%; animation-delay: .18s; }
     .mj-glint.g11 { left: 34%; top: 66%; animation-delay: .42s; }
     .mj-glint.g12 { left: 36%; top: 72%; animation-delay: .70s; }
-
-    @media (max-width: 520px){
-      .mj-glint{ width: 11px; height: 11px; }
-      .mj-glint::before,
-      .mj-glint::after{ width: 28px; }
-    }
-.all-episodes-text{
-  margin: 26px 0 10px;  /* war 14px */
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: .05em;
-  font-size: 13px;
-  color: #111;
-}
-
-.platform-links{
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.platform-btn{
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-
-  background: #fff;
-  color: #111;
-  text-decoration: none;
-
-  padding: 10px 14px;
-  font-weight: 900;
-  letter-spacing: .06em;
-  text-transform: uppercase;
-  font-size: 12px;
-
-  box-shadow: 8px 8px 0 #000;
-  transition: transform .15s ease, box-shadow .15s ease;
-  user-select: none;
-}
-
-.platform-btn:hover{
-  transform: translateY(-2px);
-  box-shadow: 10px 10px 0 #000;
-}
-
-.platform-btn:active{
-  transform: translateY(1px);
-  box-shadow: 6px 6px 0 #000;
-}
-
-.platform-btn .ico{
-  width: 18px;
-  height: 18px;
-  display: inline-block;
-}
-
-.platform-btn .ico svg{
-  width: 18px;
-  height: 18px;
-  display: block;
-  fill: currentColor;
-}
-/* Plattform-Farben */
-.platform-links .platform-btn:nth-child(1){
-  color: #1DB954; /* Spotify Grün */
-}
-
-.platform-links .platform-btn:nth-child(2){
-  color: #A855F7; /* Apple Podcasts Violett */
-}
-
-.platform-links .platform-btn:nth-child(3){
-  color: #FF0000; /* YouTube Rot */
-}
   </style>
 </head>
 
 <body>
 
-<div class="pageFade" id="pageFade"></div>
+  <!-- BACKGROUND -->
+  <div class="stage" aria-hidden="true">
+    <div class="glow"></div>
+    <canvas id="sparkles"></canvas>
+  </div>
 
-<div class="stage" id="stage">
-  <div class="glow" aria-hidden="true"></div>
-  <canvas id="sparkles" aria-hidden="true"></canvas>
-
-  <!-- Silhouette rechts -->
+  <!-- FIXED INTERACTIVE -->
   <div class="silhouette" title="Hover mich!">
     <img class="base" src="media/silhouette-black.png" alt="Silhouette">
     <img class="hover" src="media/silhouette-hover.png" alt="Silhouette Hover">
   </div>
 
-  <!-- MJ TV links -->
   <div class="mj-tv">
     <div class="tv-wrap">
       <img src="media/TV.png" class="tv-overlay" alt="MJ und TV">
@@ -599,7 +528,7 @@ body{
     </div>
   </div>
 
-  <!-- Sounds -->
+  <!-- AUDIO -->
   <audio id="logoSound" preload="auto">
     <source src="media/click1.mp3" type="audio/mpeg">
     <source src="media/click1.wav" type="audio/wav">
@@ -612,8 +541,9 @@ body{
     <source src="media/tvclick.mp3" type="audio/mpeg">
   </audio>
 
+  <!-- CONTENT -->
   <div class="wrap" id="fitContent">
-    <!-- Logo -->
+
     <div class="logo-area">
       <div class="logo-float">
         <button class="logo-btn" id="logoBtn" aria-label="Logo">
@@ -626,7 +556,6 @@ body{
       </div>
     </div>
 
-    <!-- Menü -->
     <header>
       <nav aria-label="Hauptmenü" class="menu">
         <a class="sticker s1" href="home.html"><span>HOME</span></a>
@@ -637,57 +566,44 @@ body{
       </nav>
     </header>
 
-    <!-- Inhalt -->
     <main>
       <section class="card">
         <h1>EPISODEN</h1>
         <p>Hier findest du immer die neueste Episode ganz oben.</p>
 
         <div id="feedStatus" class="latest-badge">LÄDT FEED…</div>
+        <div id="latestEpisode"></div>
 
-<!-- NUR die neueste Folge kommt hier rein -->
-<div id="latestEpisode"></div>
+        <p class="all-episodes-text">Alle Folgen findest du hier:</p>
 
-<!-- Links zu allen Folgen -->
-<p class="all-episodes-text">Alle Folgen findest du hier:</p>
+        <div class="platform-links">
+          <a class="platform-btn" href="https://open.spotify.com/show/6pBCb9JK8BZuv5IK5Pd8Dm" target="_blank" rel="noopener">
+            <span class="ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M12 0C5.372 0 0 5.373 0 12c0 6.628 5.372 12 12 12s12-5.372 12-12C24 5.373 18.628 0 12 0zm5.521 17.372a.75.75 0 0 1-1.034.246c-2.832-1.729-6.4-2.121-10.607-1.165a.75.75 0 1 1-.332-1.462c4.6-1.045 8.54-.596 11.726 1.349a.75.75 0 0 1 .247 1.032zm1.477-3.28a.9.9 0 0 1-1.238.296c-3.245-1.994-8.194-2.572-12.03-1.407a.9.9 0 1 1-.522-1.722c4.38-1.329 9.83-.684 13.51 1.576a.9.9 0 0 1 .28 1.257zm.128-3.412c-3.802-2.257-10.075-2.466-13.705-1.364a1.05 1.05 0 0 1-.61-2.01c4.173-1.267 11.104-1.022 15.48 1.57a1.05 1.05 0 0 1-1.165 1.804z"/></svg>
+            </span>
+            <span>Spotify</span>
+          </a>
 
-<div class="platform-links">
-  <a class="platform-btn" href="https://open.spotify.com/show/6pBCb9JK8BZuv5IK5Pd8Dm" target="_blank" rel="noopener">
-    <span class="ico" aria-hidden="true">
-      <!-- Spotify Icon -->
-      <svg viewBox="0 0 24 24" role="img" focusable="false">
-        <path d="M12 0C5.372 0 0 5.373 0 12c0 6.628 5.372 12 12 12s12-5.372 12-12C24 5.373 18.628 0 12 0zm5.521 17.372a.75.75 0 0 1-1.034.246c-2.832-1.729-6.4-2.121-10.607-1.165a.75.75 0 1 1-.332-1.462c4.6-1.045 8.54-.596 11.726 1.349a.75.75 0 0 1 .247 1.032zm1.477-3.28a.9.9 0 0 1-1.238.296c-3.245-1.994-8.194-2.572-12.03-1.407a.9.9 0 1 1-.522-1.722c4.38-1.329 9.83-.684 13.51 1.576a.9.9 0 0 1 .28 1.257zm.128-3.412c-3.802-2.257-10.075-2.466-13.705-1.364a1.05 1.05 0 0 1-.61-2.01c4.173-1.267 11.104-1.022 15.48 1.57a1.05 1.05 0 0 1-1.165 1.804z"/>
-      </svg>
-    </span>
-    <span>Spotify</span>
-  </a>
+          <a class="platform-btn" href="https://podcasts.apple.com/de/podcast/der-michael-jackson-podcast/id1532487087" target="_blank" rel="noopener">
+            <span class="ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M12 2a5 5 0 0 0-3 9v1a2 2 0 0 0-1 1.732v.268a2 2 0 0 0 1.516 1.944l-.74 2.72A1.5 1.5 0 0 0 10.22 21h3.56a1.5 1.5 0 0 0 1.444-2.336l-.74-2.72A2 2 0 0 0 16 14v-.268A2 2 0 0 0 15 12v-1a5 5 0 0 0-3-9zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6zm-1 9h2v1h-2v-1zm.24 3h1.52l.64 2.35a.3.3 0 0 1-.29.38h-2.22a.3.3 0 0 1-.29-.38L11.24 16z"/></svg>
+            </span>
+            <span>Apple Podcasts</span>
+          </a>
 
-  <a class="platform-btn" href="https://podcasts.apple.com/de/podcast/der-michael-jackson-podcast/id1532487087" target="_blank" rel="noopener">
-  <span class="ico" aria-hidden="true">
-    <!-- Apple Podcasts Icon (korrekt) -->
-    <svg viewBox="0 0 24 24">
-      <path d="M12 2a5 5 0 0 0-3 9v1a2 2 0 0 0-1 1.732v.268a2 2 0 0 0 1.516 1.944l-.74 2.72A1.5 1.5 0 0 0 10.22 21h3.56a1.5 1.5 0 0 0 1.444-2.336l-.74-2.72A2 2 0 0 0 16 14v-.268A2 2 0 0 0 15 12v-1a5 5 0 0 0-3-9zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6zm-1 9h2v1h-2v-1zm.24 3h1.52l.64 2.35a.3.3 0 0 1-.29.38h-2.22a.3.3 0 0 1-.29-.38L11.24 16z"/>
-    </svg>
-  </span>
-  <span>Apple Podcasts</span>
-</a>
-
-  <a class="platform-btn" href="https://www.youtube.com/@MJJReviews" target="_blank" rel="noopener">
-    <span class="ico" aria-hidden="true">
-      <!-- YouTube Icon -->
-      <svg viewBox="0 0 24 24" role="img" focusable="false">
-        <path d="M23.498 6.186a3.007 3.007 0 0 0-2.118-2.13C19.51 3.5 12 3.5 12 3.5s-7.51 0-9.38.556A3.007 3.007 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.007 3.007 0 0 0 2.118 2.13C4.49 20.5 12 20.5 12 20.5s7.51 0 9.38-.556a3.007 3.007 0 0 0 2.118-2.13C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.75 15.5v-7l6 3.5-6 3.5z"/>
-      </svg>
-    </span>
-    <span>YouTube</span>
-  </a>
-</div>
+          <a class="platform-btn" href="https://www.youtube.com/@MJJReviews" target="_blank" rel="noopener">
+            <span class="ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M23.498 6.186a3.007 3.007 0 0 0-2.118-2.13C19.51 3.5 12 3.5 12 3.5s-7.51 0-9.38.556A3.007 3.007 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.007 3.007 0 0 0 2.118 2.13C4.49 20.5 12 20.5 12 20.5s7.51 0 9.38-.556a3.007 3.007 0 0 0 2.118-2.13C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.75 15.5v-7l6 3.5-6 3.5z"/></svg>
+            </span>
+            <span>YouTube</span>
+          </a>
+        </div>
       </section>
     </main>
   </div>
 
   <script>
-    // Funkelnder Hintergrund (Canvas Partikel)
+    // ===== CANVAS SPARKLES =====
     const canvas = document.getElementById("sparkles");
     const ctx = canvas.getContext("2d", { alpha: true });
 
@@ -696,8 +612,6 @@ body{
       dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
       w = canvas.width = Math.floor(innerWidth * dpr);
       h = canvas.height = Math.floor(innerHeight * dpr);
-      canvas.style.width = innerWidth + "px";
-      canvas.style.height = innerHeight + "px";
     }
     addEventListener("resize", resize, { passive:true });
     resize();
@@ -739,40 +653,26 @@ body{
       requestAnimationFrame(draw);
     }
     requestAnimationFrame(draw);
-  </script>
 
-  <script>
-    // Logo Klicksound
+    // ===== SOUNDS / LOGO NAV =====
     const logoBtn = document.getElementById("logoBtn");
-const logoSound = document.getElementById("logoSound");
-
-if (logoBtn && logoSound) {
-  logoBtn.addEventListener("click", (e) => {
-    e.preventDefault(); // verhindert sofortige Navigation
-
-    try {
-      logoSound.currentTime = 0;
-      logoSound.play();
-    } catch (e) {}
-
-    // Nach 1,5 Sekunden zu HOME
-    setTimeout(() => {
-      window.location.href = "home.html";
-    }, 1500);
-  });
-}
-
-    // Silhouette Klicksound
-    const silhouette = document.querySelector(".silhouette");
-    const silhouetteSound = document.getElementById("silhouetteSound");
-    if (silhouette && silhouetteSound) {
-      silhouette.addEventListener("click", () => {
-        try { silhouetteSound.currentTime = 0; silhouetteSound.play(); } catch (e) {}
+    const logoSound = document.getElementById("logoSound");
+    if (logoBtn && logoSound){
+      logoBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        try { logoSound.currentTime = 0; logoSound.play(); } catch(err){}
+        setTimeout(() => { window.location.href = "home.html"; }, 1500);
       });
     }
-  </script>
 
-  <script>
+    const silhouette = document.querySelector(".silhouette");
+    const silhouetteSound = document.getElementById("silhouetteSound");
+    if (silhouette && silhouetteSound){
+      silhouette.addEventListener("click", () => {
+        try { silhouetteSound.currentTime = 0; silhouetteSound.play(); } catch(err){}
+      });
+    }
+
     // ===== TV BUTTONS -> VIDEO PLAY + IDLE STATIC =====
     const tvVideo = document.getElementById("tvVideo");
     const tvButtons = document.querySelectorAll(".tv-btn");
@@ -809,18 +709,15 @@ if (logoBtn && logoSound) {
         const src = btn.getAttribute("data-video");
         if (!src) return;
 
-        // Klick Sound
         if (tvClickSound){
-          try { tvClickSound.currentTime = 0; tvClickSound.play(); } catch(e){}
+          try { tvClickSound.currentTime = 0; tvClickSound.play(); } catch(err){}
         }
 
-        // Press Animation
         btn.classList.remove("pressed");
         void btn.offsetWidth;
         btn.classList.add("pressed");
         setTimeout(() => btn.classList.remove("pressed"), 120);
 
-        // Toggle
         if (activeSrc === src){
           activeSrc = IDLE_SRC;
           playSrc(IDLE_SRC, { loop:true, muted:true });
@@ -838,100 +735,85 @@ if (logoBtn && logoSound) {
         playSrc(IDLE_SRC, { loop:true, muted:true });
       });
     }
-  </script>
 
-  <script>
-  // ===== PODCAST FEED (Anchor RSS -> rss2json) =====
-  const FEED_URL = "https://anchor.fm/s/37627e88/podcast/rss";
-  const RSS2JSON = "https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent(FEED_URL);
+    // ===== PODCAST FEED (Anchor RSS -> rss2json) =====
+    const FEED_URL = "https://anchor.fm/s/37627e88/podcast/rss";
+    const RSS2JSON = "https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent(FEED_URL);
 
-  const feedStatus = document.getElementById("feedStatus");
-  const latestWrap = document.getElementById("latestEpisode");
+    const feedStatus = document.getElementById("feedStatus");
+    const latestWrap = document.getElementById("latestEpisode");
 
-  function formatDate(dateStr){
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return "";
-    return d.toLocaleDateString("de-DE", { year:"numeric", month:"2-digit", day:"2-digit" });
-  }
+    function formatDate(dateStr){
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return "";
+      return d.toLocaleDateString("de-DE", { year:"numeric", month:"2-digit", day:"2-digit" });
+    }
 
-  function escapeHtml(s){
-    return (s || "").replace(/[&<>"']/g, m => ({
-      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-    }[m]));
-  }
+    function escapeHtml(s){
+      return (s || "").replace(/[&<>"']/g, m => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+      }[m]));
+    }
 
-  function stripHtml(html){
-    return (html || "").replace(/<[^>]*>/g, "").trim();
-  }
+    function stripHtml(html){
+      return (html || "").replace(/<[^>]*>/g, "").trim();
+    }
 
-  function episodeCard(item){
-    const title = escapeHtml(item.title || "");
-    const date  = formatDate(item.pubDate || item.publishedDate || "");
-    const desc  = escapeHtml(stripHtml(item.description || item.content || ""));
-    const audio = item.enclosure && item.enclosure.link ? item.enclosure.link : "";
+    function episodeCard(item){
+      const title = escapeHtml(item.title || "");
+      const date  = formatDate(item.pubDate || item.publishedDate || "");
+      const desc  = escapeHtml(stripHtml(item.description || item.content || ""));
+      const audio = item.enclosure && item.enclosure.link ? item.enclosure.link : "";
 
-    return `
-      <div class="episode">
-        <div class="meta">
-          <h2>${title}</h2>
-          <div class="date">${date}</div>
+      return `
+        <div class="episode">
+          <div class="meta">
+            <h2>${title}</h2>
+            <div class="date">${date}</div>
+          </div>
+          ${desc ? `<p class="desc">${desc}</p>` : ``}
+          ${audio ? `<audio controls preload="none" src="${audio}"></audio>` : `<p class="desc">Kein Audio-Link gefunden.</p>`}
         </div>
-        ${desc ? `<p class="desc">${desc}</p>` : ``}
-        ${audio ? `<audio controls preload="none" src="${audio}"></audio>` : `<p class="desc">Kein Audio-Link gefunden.</p>`}
-      </div>
-    `;
-  }
+      `;
+    }
 
-  async function loadFeed(){
-    try{
-      if (feedStatus) feedStatus.textContent = "LÄDT FEED…";
+    async function loadFeed(){
+      try{
+        if (feedStatus) feedStatus.textContent = "LÄDT FEED…";
 
-      const res = await fetch(RSS2JSON, { cache: "no-store" });
-      if (!res.ok) throw new Error("Feed konnte nicht geladen werden (HTTP " + res.status + ")");
+        const res = await fetch(RSS2JSON, { cache: "no-store" });
+        if (!res.ok) throw new Error("Feed konnte nicht geladen werden (HTTP " + res.status + ")");
 
-      const data = await res.json();
+        const data = await res.json();
+        if (data.status && data.status !== "ok"){
+          throw new Error(data.message || "rss2json Fehler");
+        }
 
-      // rss2json liefert oft {status:"ok"} oder {status:"error", message:"..."}
-      if (data.status && data.status !== "ok"){
-        throw new Error(data.message || "rss2json Fehler");
-      }
+        const items = Array.isArray(data.items) ? data.items : [];
+        if (!items.length){
+          if (feedStatus) feedStatus.textContent = "KEINE FOLGEN GEFUNDEN";
+          if (latestWrap) latestWrap.innerHTML = "";
+          return;
+        }
 
-      const items = Array.isArray(data.items) ? data.items : [];
+        items.sort((a,b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
+        const latest = items[0];
 
-      if (!items.length){
-        if (feedStatus) feedStatus.textContent = "KEINE FOLGEN GEFUNDEN";
-        if (latestWrap) latestWrap.innerHTML = "";
-        return;
-      }
+        if (feedStatus) feedStatus.textContent = "NEUESTE FOLGE";
+        if (latestWrap) latestWrap.innerHTML = episodeCard(latest);
 
-      // sicherheitshalber neueste zuerst
-      items.sort((a,b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
-
-      const latest = items[0];
-
-      if (feedStatus) feedStatus.textContent = "NEUESTE FOLGE";
-
-      if (latestWrap) {
-        latestWrap.innerHTML = episodeCard(latest);
-      }
-
-    } catch(err){
-      if (feedStatus) feedStatus.textContent = "FEED FEHLER";
-      if (latestWrap) {
-        latestWrap.innerHTML = `
-          <p style="margin:0;font-weight:900;">Konnte Feed nicht laden.</p>
-          <p style="margin:8px 0 0;">${escapeHtml(String(err.message || err))}</p>
-        `;
+      } catch(err){
+        if (feedStatus) feedStatus.textContent = "FEED FEHLER";
+        if (latestWrap){
+          latestWrap.innerHTML = `
+            <p style="margin:0;font-weight:900;">Konnte Feed nicht laden.</p>
+            <p style="margin:8px 0 0;">${escapeHtml(String(err.message || err))}</p>
+          `;
+        }
       }
     }
-  }
 
-   loadFeed();
-</script>
-
-</div> <!-- wrap -->
-</div> <!-- stage -->
-
-<script src="site.js"></script>
+    loadFeed();
+  </script>
 </body>
 </html>
